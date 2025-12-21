@@ -2,8 +2,8 @@
 
 # Site Settings
 site:
-  url: "https://gearmix.co.jp/"
-  name: "GearMix"
+  url: "https://pcdo-school.jp/"
+  name: "PC堂パソコン教室"
 
 # Google Search Console Settings
 gsc:
@@ -30,7 +30,7 @@ ga4:
 
 # Report Settings
 report:
-  title: "GearMix週次SEOレポート"
+  title: "PC堂パソコン教室 週次SEOレポート"
   subtitle: "検索パフォーマンス分析"
   output_format: "html"
   include_graphs: true
