@@ -1,0 +1,60 @@
+# GearMix SEO Reporter Configuration
+
+# Site Settings
+site:
+  url: "https://gearmix.co.jp/"
+  name: "GearMix"
+
+# Google Search Console Settings
+gsc:
+  dimensions:
+    - query
+    - page
+    - device
+  metrics:
+    - clicks
+    - impressions
+    - ctr
+    - position
+  row_limit: 1000
+
+# Google Analytics 4 Settings
+ga4:
+  # プロパティIDは環境変数 GMX_GA4_PROPERTY_ID から取得
+  dimensions:
+    - sessionDefaultChannelGroup
+  metrics:
+    - sessions
+    - totalUsers
+    - screenPageViews
+
+# Report Settings
+report:
+  title: "GearMix週次SEOレポート"
+  subtitle: "検索パフォーマンス分析"
+  output_format: "html"
+  include_graphs: true
+  include_executive_summary: true
+  top_queries_count: 20
+  
+# Visualization Settings
+visualization:
+  graph_style: "seaborn"
+  color_scheme:
+    primary: "#2E86AB"
+    secondary: "#A23B72"
+    success: "#06A77D"
+    warning: "#F18F01"
+    danger: "#C73E1D"
+  font_family: "Noto Sans JP"
+  figure_size: [12, 6]
+  dpi: 100
+
+# Timezone
+timezone: "Asia/Tokyo"
+
+# Output Settings
+output:
+  directory: "reports/weekly"
+  filename_pattern: "gmx_weekly_report_{date}.html"
+  graph_filename_pattern: "gmx_graph_{type}_{date}.png"

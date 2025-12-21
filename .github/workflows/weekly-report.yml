@@ -1,0 +1,55 @@
+name: GMX Weekly SEO Report Generator
+
+on:
+  # 毎週月曜日 00:00 UTC (09:00 JST) に自動実行
+  schedule:
+    - cron: '0 0 * * 1'
+  
+  # 手動実行も可能
+  workflow_dispatch:
+
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 リポジトリをチェックアウト
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Python環境をセットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: 📦 依存関係をインストール
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: 🔐 認証情報を設定
+        env:
+          GMX_SERVICE_ACCOUNT_CREDENTIALS: ${{ secrets.GMX_SERVICE_ACCOUNT_CREDENTIALS }}
+          GMX_GA4_PROPERTY_ID: ${{ secrets.GMX_GA4_PROPERTY_ID }}
+        run: |
+          echo "認証情報が設定されました"
+      
+      - name: 📊 週次レポートを生成
+        env:
+          GMX_SERVICE_ACCOUNT_CREDENTIALS: ${{ secrets.GMX_SERVICE_ACCOUNT_CREDENTIALS }}
+          GMX_GA4_PROPERTY_ID: ${{ secrets.GMX_GA4_PROPERTY_ID }}
+        run: |
+          python gmx_weekly_report.py
+      
+      - name: 📤 レポートをコミット
+        run: |
+          git config --local user.email "seo-bot@gearmix.co.jp"
+          git config --local user.name "GearMix SEO Bot"
+          git add reports/
+          git diff --quiet && git diff --staged --quiet || git commit -m "📊 週次SEOレポート自動生成 - $(date +'%Y-%m-%d')"
+      
+      - name: 🚀 変更をプッシュ
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
