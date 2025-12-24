@@ -210,6 +210,9 @@ def main():
                     import json
                     creds_json = json.loads(creds_json_str)
                     
+                    # デバッグ: 使用するメールアドレスを表示
+                    print(f"   ℹ️ 使用中のサービスアカウント: {creds_json.get('client_email')}")
+                    
                     print(f"   Google Driveに接続中... (Target ID: {drive_folder_id})")
                     drive_client = GmxDriveClient(
                         folder_id=drive_folder_id,
