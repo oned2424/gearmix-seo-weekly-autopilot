@@ -11,6 +11,8 @@ on:
 jobs:
   generate-report:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     
     steps:
       - name: 📥 リポジトリをチェックアウト
@@ -40,19 +42,21 @@ jobs:
         env:
           GMX_SERVICE_ACCOUNT_CREDENTIALS: ${{ secrets.GMX_SERVICE_ACCOUNT_CREDENTIALS }}
           GMX_GA4_PROPERTY_ID: ${{ secrets.GMX_GA4_PROPERTY_ID }}
-          # Google Drive (あれば専用、なければ共通を使用)
+          # Google Drive
           GMX_DRIVE_CREDENTIALS: ${{ secrets.GMX_DRIVE_CREDENTIALS }}
           GMX_DRIVE_FOLDER_ID: ${{ secrets.GMX_DRIVE_FOLDER_ID }}
         run: |
           python gmx_weekly_report.py
       
-      - name: 📤 レポートをコミット
+      - name: 📤 レポートをコミットとプッシュ
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --local user.email "seo-bot@gearmix.co.jp"
           git config --local user.name "GearMix SEO Bot"
           git add reports/
           
-          # 変更チェック: 変更がなければ正常終了
+          # 変更チェック
           if git diff --quiet && git diff --staged --quiet; then
             echo "No changes to commit."
             exit 0
@@ -60,12 +64,30 @@ jobs:
           
           git commit -m "📊 週次SEOレポート自動生成 - $(date +'%Y-%m-%d')"
           
-          # 競合回避: 最新の変更を取り込む
-          echo "Pulling latest changes..."
-          git pull --rebase origin main
-      
-      - name: 🚀 変更をプッシュ
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
+          # 競合回避リトライループ
+          MAX_RETRIES=5
+          count=0
+          success=false
+          
+          while [ $count -lt $MAX_RETRIES ]; do
+            echo "Attempting to push (Try $((count+1))/$MAX_RETRIES)..."
+            
+            # 最新を取り込む
+            git pull --rebase origin main
+            
+            # プッシュ試行
+            if git push origin main; then
+              success=true
+              echo "✅ Successfully pushed changes."
+              break
+            else
+              echo "⚠️ Push failed. Waiting to retry..."
+              count=$((count+1))
+              sleep 5
+            fi
+          done
+          
+          if [ "$success" = false ]; then
+            echo "❌ Failed to push after $MAX_RETRIES attempts."
+            exit 1
+          fi
