@@ -5,6 +5,7 @@ from pathlib import Path
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google.oauth2 import service_account
+from google.oauth2.credentials import Credentials
 import json
 
 class GmxDriveClient:
@@ -23,9 +24,16 @@ class GmxDriveClient:
         self.folder_id = folder_id
         
         if credentials_json:
-            self.creds = service_account.Credentials.from_service_account_info(
-                credentials_json, scopes=self.SCOPES
-            )
+            # Check if it's a Service Account or User OAuth Token
+            if 'type' in credentials_json and credentials_json['type'] == 'service_account':
+                print("   🔑 Authenticating with Service Account...")
+                self.creds = service_account.Credentials.from_service_account_info(
+                    credentials_json, scopes=self.SCOPES
+                )
+            else:
+                print("   🔑 Authenticating with OAuth Token (User Account)...")
+                # Assuming credentials_json is the token.json content
+                self.creds = Credentials.from_authorized_user_info(credentials_json, self.SCOPES)
         else:
             # Fallback for local testing or environment variable
             # Ideally should pass credentials explicitly
