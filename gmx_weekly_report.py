@@ -21,6 +21,7 @@ from gmx_seo_reporter.analyzers.data_analyzer import GmxDataAnalyzer
 from gmx_seo_reporter.visualizers.graph_generator import GmxReportVisualizer
 from gmx_seo_reporter.generators.summary_generator import GmxSummaryGenerator
 from gmx_seo_reporter.generators.report_builder import GmxReportBuilder
+from gmx_seo_reporter.clients.drive_client import GmxDriveClient
 
 
 def load_config(config_path: str = None) -> dict:
@@ -185,6 +186,43 @@ def main():
     print(f"📊 グラフ: {len(graphs)}個")
     print()
     print("レポートをブラウザで開いてご確認ください。")
+    print()
+
+    # === STEP 6: Google Driveへアップロード ===
+    if config.get('drive', {}).get('enabled', False):
+        print("☁️ STEP 6: Google Driveへアップロード")
+        print("-" * 60)
+        
+        drive_folder_id = os.environ.get('GMX_DRIVE_FOLDER_ID')
+        if not drive_folder_id:
+            print("   ⚠️ 環境変数 GMX_DRIVE_FOLDER_ID が設定されていないためスキップします")
+        else:
+            try:
+                # 認証情報の取得 (Drive専用 -> 共通の順で探す)
+                creds_json_str = os.environ.get('GMX_DRIVE_CREDENTIALS')
+                if not creds_json_str:
+                    print("   ℹ️ Drive専用の鍵が見つからないため、共通の鍵を使用します")
+                    creds_json_str = os.environ.get('GMX_SERVICE_ACCOUNT_CREDENTIALS')
+                
+                if not creds_json_str:
+                    print("   ❌ 認証情報が見つからないためスキップします")
+                else:
+                    import json
+                    creds_json = json.loads(creds_json_str)
+                    
+                    print(f"   Google Driveに接続中... (Target ID: {drive_folder_id})")
+                    drive_client = GmxDriveClient(
+                        folder_id=drive_folder_id,
+                        credentials_json=creds_json
+                    )
+                    
+                    print(f"   フォルダをアップロード中...: {output_dir.name}")
+                    uploaded_id = drive_client.upload_folder(output_dir)
+                    print(f"   ✅ アップロード完了! (Folder ID: {uploaded_id})")
+            except Exception as e:
+                print(f"   ❌ アップロードに失敗しました: {e}")
+                import traceback
+                traceback.print_exc()
     print()
 
 

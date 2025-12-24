@@ -38,6 +38,9 @@ jobs:
         env:
           GMX_SERVICE_ACCOUNT_CREDENTIALS: ${{ secrets.GMX_SERVICE_ACCOUNT_CREDENTIALS }}
           GMX_GA4_PROPERTY_ID: ${{ secrets.GMX_GA4_PROPERTY_ID }}
+          # Google Drive (あれば専用、なければ共通を使用)
+          GMX_DRIVE_CREDENTIALS: ${{ secrets.GMX_DRIVE_CREDENTIALS }}
+          GMX_DRIVE_FOLDER_ID: ${{ secrets.GMX_DRIVE_FOLDER_ID }}
         run: |
           python gmx_weekly_report.py
       

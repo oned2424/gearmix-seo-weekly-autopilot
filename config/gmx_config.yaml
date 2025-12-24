@@ -5,6 +5,11 @@ site:
   url: "https://pcdo-school.jp/"
   name: "PC堂パソコン教室"
 
+# Google Drive Settings
+drive:
+  # フォルダIDは環境変数 GMX_DRIVE_FOLDER_ID から取得
+  enabled: true
+
 # Google Search Console Settings
 gsc:
   dimensions:
